@@ -1,5 +1,5 @@
 summarize_hours
----------------
+===============
 
 This is a simple script to take hours recorded in a yaml file and summarize
 them several ways.
@@ -34,3 +34,10 @@ proj4
 proj5
 - Discussion with clients.
 ```
+
+
+Discussion
+----------
+
+* Should I have used Pandas?  Probably.
+* Should I have docstrings and tests?  Definitely.
