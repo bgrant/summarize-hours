@@ -58,7 +58,7 @@ def find_rightmost_index(lst, end_date):
 
 
 def window_data(data, start_date, end_date):
-    keylist = data.keys()
+    keylist = list(data.keys())
     start_index = find_leftmost_index(keylist, start_date)
     stop_index = find_rightmost_index(keylist, end_date)
     windowed = OrderedDict()
@@ -72,12 +72,12 @@ def parse(filename="daily.yaml"):
         hours_doc = yaml.load(fh)
 
     data = {}
-    for date_str, hours_lst in hours_doc.iteritems():
+    for date_str, hours_lst in hours_doc.items():
         date = parse_date(date_str)
         hours = parse_hours(hours_lst)
         data[date] = hours
 
-    return OrderedDict(sorted(data.iteritems()))
+    return OrderedDict(sorted(data.items()))
 
 
 def normalize_dates(start_date_str, end_date_str):
@@ -113,7 +113,7 @@ def bin_hours(hours):
 
 def build_hours_from_date(data):
     hours_from_date = OrderedDict()
-    for date, hours in data.iteritems():
+    for date, hours in data.items():
         hours_from_date[date] = bin_hours(hours)
     return hours_from_date
 
