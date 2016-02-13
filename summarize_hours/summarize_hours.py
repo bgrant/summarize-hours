@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+"""
+This is a simple script to take hours recorded in a yaml file and summarize
+them several ways.  See README.md for more info.
+"""
+
 #   Copyright 2015 Robert David Grant
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
@@ -251,6 +256,7 @@ def main(path, start_date, end_date):
 
 
 def last_week(path):
+    """Convenience function to summarize the hours for 'last week'."""
     today = datetime.today()
     last_sunday = today - timedelta(days=(today.weekday()+1))
     previous_sunday = last_sunday - timedelta(days=7)
@@ -260,6 +266,7 @@ def last_week(path):
 
 
 def this_week(path):
+    """Convenience function to summarize the hours for 'this week'."""
     today = datetime.today()
     tomorrow = today + timedelta(days=1)
     last_sunday = today - timedelta(days=(today.weekday()+1))
@@ -269,6 +276,7 @@ def this_week(path):
 
 
 def yesterday(path):
+    """Convenience function to summarize the hours for 'yesterday'."""
     today = datetime.today()
     yesterday = today - timedelta(days=1)
     end_date = today.strftime("%Y-%m-%d")
@@ -277,6 +285,7 @@ def yesterday(path):
 
 
 def today(path):
+    """Convenience function to summarize the hours for 'today'."""
     today = datetime.today()
     tomorrow = today + timedelta(days=1)
     end_date = tomorrow.strftime("%Y-%m-%d")
@@ -285,6 +294,7 @@ def today(path):
 
 
 def cli():
+    """Command-line interface."""
     if len(sys.argv) == 4:
         path, start_date, end_date = sys.argv[1:]
     elif len(sys.argv) == 2:
