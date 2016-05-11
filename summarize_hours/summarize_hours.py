@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 """
-This is a simple script to take hours recorded in a yaml file and summarize
-them several ways.  See README.md for more info.
+Take task hours recorded in a yaml file and summarize them.
+
+See README.md for more info.
 """
 
-#   Copyright 2015 Robert David Grant
+#   Copyright 2015-2016 Robert David Grant
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
@@ -21,8 +22,9 @@ them several ways.  See README.md for more info.
 
 
 from __future__ import division, print_function
+import logging
 
-import sys
+import argparse
 import yaml
 import bisect
 from datetime import datetime, timedelta
@@ -30,6 +32,11 @@ from collections import OrderedDict, defaultdict
 
 
 INDENT = 4 * " "
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.WARNING,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def line_split(line):
@@ -93,6 +100,7 @@ def parse(filename="daily.yaml"):
 
     data = {}
     for date_str, hours_lst in hours_doc.items():
+        logger.debug('%s %s' % (date_str, hours_lst))
         date = parse_date(date_str)
         hours = parse_hours(hours_lst)
         data[date] = hours
@@ -169,7 +177,7 @@ def print_desc_from_category(desc_from_category):
         print(category)
         for line in desc_from_category[category]:
             if line.strip():
-                print("- {}".format(line))
+                print("* {}".format(line))
 
 
 def build_hours_from_category(hours_from_date):
@@ -255,8 +263,11 @@ def main(path, start_date, end_date):
     print_desc_from_category(desc_from_category)
 
 
-def last_week(path):
-    """Convenience function to summarize the hours for 'last week'."""
+# convenience functions
+
+
+def last_week():
+    """Convenience function to generate start and end dates for 'last-week'."""
     today = datetime.today()
     last_sunday = today - timedelta(days=(today.weekday()+1))
     previous_sunday = last_sunday - timedelta(days=7)
@@ -265,8 +276,8 @@ def last_week(path):
     return start_date, end_date
 
 
-def this_week(path):
-    """Convenience function to summarize the hours for 'this week'."""
+def this_week():
+    """Convenience function to generate start and end dates for 'this-week'."""
     today = datetime.today()
     tomorrow = today + timedelta(days=1)
     last_sunday = today - timedelta(days=(today.weekday()+1))
@@ -275,8 +286,8 @@ def this_week(path):
     return start_date, end_date
 
 
-def yesterday(path):
-    """Convenience function to summarize the hours for 'yesterday'."""
+def yesterday():
+    """Convenience function to generate start and end dates for 'yesterday'."""
     today = datetime.today()
     yesterday = today - timedelta(days=1)
     end_date = today.strftime("%Y-%m-%d")
@@ -284,8 +295,8 @@ def yesterday(path):
     return start_date, end_date
 
 
-def today(path):
-    """Convenience function to summarize the hours for 'today'."""
+def today():
+    """Convenience function to generate start and end dates for 'today'."""
     today = datetime.today()
     tomorrow = today + timedelta(days=1)
     end_date = tomorrow.strftime("%Y-%m-%d")
@@ -293,25 +304,35 @@ def today(path):
     return start_date, end_date
 
 
-def cli():
-    """Command-line interface."""
-    if len(sys.argv) == 4:
-        path, start_date, end_date = sys.argv[1:]
-    elif len(sys.argv) == 2:
-        # assume the nearest previous Sunday through today
-        path = sys.argv[1]
-        start_date, end_date = this_week(path)
-    elif len(sys.argv) == 3:
-        path = sys.argv[1]
-        time = sys.argv[2]
-        keys = {'last_week': last_week,
-                'week': this_week,
-                'yesterday': yesterday,
-                'today': today,
-                }
-        start_date, end_date = keys[time](path)
+# end convenience functions
 
-    main(path, start_date, end_date)
+
+def cli():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('path', help='path to source yaml file')
+    parser.add_argument('dates', nargs='+',
+                        help=('start and end dates in ISO format'
+                              ' OR '
+                              '{"today", "yesterday", "this-week", "last-week"}')
+                        )
+    parser.add_argument('--verbose', '-v', action='store_true',
+                        help='Verbose debugging.')
+    args = parser.parse_args()
+
+    aliases = {'last-week': last_week,
+               'this-week': this_week,
+               'yesterday': yesterday,
+               'today': today,
+               }
+    if args.dates[0] in aliases:
+        start_date, end_date = aliases[args.dates[0]]()
+    else:
+        start_date, end_date = args.dates
+
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
+
+    main(args.path, start_date, end_date)
 
 
 if __name__ == "__main__":
